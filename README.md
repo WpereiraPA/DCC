@@ -1,27 +1,15 @@
 # DCC
 
-Package under development for analysis of Central Composite Designs.
+R package for analysis of Central Composite Designs.
 
-## Status
+## Overview
 
-This package is currently in development.
-
-## Objective
-
-Provide tools for:
-
-- model fitting for experimental designs
-- ANOVA tables
-- effect estimation
-- Pareto charts
-- response surface plots
-- export of analytical reports
+The **DCC** package was developed to support the analysis of Central Composite Designs in R, providing practical tools for model fitting, ANOVA, effect estimation, graphical visualization, and automatic report generation.
 
 ## Installation
 
-Not yet available via GitHub installation.
-
-Soon:
+You can install the development version from GitHub with:
 
 ```r
+install.packages("remotes")
 remotes::install_github("WpereiraPA/DCC")
