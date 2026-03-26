@@ -178,7 +178,6 @@
 #   resposta = "Rugosidade"
 # )
 # 
-# summary_dcc(fit)
 # anova_dcc(fit)
 # coeficientes_dcc(fit)
 # 
