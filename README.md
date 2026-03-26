@@ -100,7 +100,7 @@
 # ### Estatísticas do modelo
 # 
 # ```r
-# summary_dcc(fit$modelo)
+# summary_dcc(fit)
 # ```
 # 
 # ### ANOVA
@@ -177,6 +177,8 @@
 #   dados,
 #   resposta = "Rugosidade"
 # )
+# 
+# sumario_dcc(fit)
 # 
 # anova_dcc(fit)
 # coeficientes_dcc(fit)

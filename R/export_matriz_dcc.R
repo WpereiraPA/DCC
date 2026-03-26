@@ -1,3 +1,12 @@
+#' Exporta a matriz experimental DCC
+#'
+#' @param matriz data.frame gerado pela funcao matriz_dcc().
+#' @param arquivo nome do arquivo de saida, sem extensao.
+#' @param remover_ensaio logical. Se TRUE, remove a coluna Ensaio antes da exportacao.
+#'
+#' @return Invisivelmente, o nome do arquivo gerado.
+#' @export
+
 export_matriz_dcc <- function(matriz,
                               arquivo = "Matriz_DCC",
                               remover_ensaio = FALSE) {
