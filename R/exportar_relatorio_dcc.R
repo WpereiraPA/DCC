@@ -8,7 +8,7 @@
 #'
 #' @return invisivelmente, o nome do arquivo gerado
 #' @export
-export_relatorio_dcc <- function(fit,
+exportar_relatorio_dcc <- function(fit,
                                  arquivo = "Relatorio_DCC",
                                  formato = "txt",
                                  tipo_otimo = NULL) {

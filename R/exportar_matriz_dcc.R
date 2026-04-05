@@ -7,7 +7,7 @@
 #' @return Invisivelmente, o nome do arquivo gerado.
 #' @export
 
-export_matriz_dcc <- function(matriz,
+exportar_matriz_dcc <- function(matriz,
                               arquivo = "Matriz_DCC",
                               remover_ensaio = FALSE) {
 

@@ -1,21 +1,21 @@
 Package: DCC
+Type: Package
 Title: Analysis of Central Composite Designs
 Version: 0.3.0
-Authors@R: 
-    person("Wanderley", "Xavier Pereira", 
-           email = "wander.wx@gmail.com", 
-           role = c("aut", "cre"))
-Description: Tools for generation and statistical analysis of Central Composite Designs (CCD). 
-    The package allows experimental matrix generation, matrix export, model fitting, ANOVA, 
-    estimation of effects and coefficients, response surface visualization, contour plots, 
-    Pareto charts, consolidated analytical summaries and automated report export. Designed for 
-    researchers, students and professionals working with experimental design and process optimization.
+Authors@R: c(person("Wanderley", "Xavier Pereira", email = "wander.wx@gmail.com", role = c("aut", "cre", "cph")), person("CEFET-MG", role = "cph", comment = "Centro Federal de Educacao Tecnologica de Minas Gerais"))
+Description: Tools for generation and statistical analysis of Central Composite Designs (CCD).
+    The package allows experimental matrix generation, matrix export, model fitting, ANOVA,
+    estimation of effects and coefficients, response surface visualization, contour plots,
+    Pareto charts, consolidated analytical summaries and automated report export.
+    Designed for researchers, students and professionals working with experimental design
+    and process optimization.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Imports:
     graphics,
     grDevices,
+    openxlsx,
     stats,
     utils
 Roxygen: list(markdown = TRUE)
