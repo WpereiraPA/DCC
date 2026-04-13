@@ -18,7 +18,7 @@ exportar_excel_dcc <- function(fit,
   }
 
   if (!requireNamespace("openxlsx", quietly = TRUE)) {
-    stop("Instale o pacote 'openxlsx' para usar esta função.")
+    stop("Instale o pacote 'openxlsx' para usar esta funcao.")
   }
 
   if (is.null(fatores)) {
@@ -38,10 +38,75 @@ exportar_excel_dcc <- function(fit,
   wb <- openxlsx::createWorkbook()
 
   # =======================
+  # ESTILOS
+  # =======================
+  estilo_cabecalho <- openxlsx::createStyle(
+    textDecoration = "bold",
+    halign = "center",
+    valign = "center",
+    border = "TopBottomLeftRight",
+    fgFill = "#D9EAF7"
+  )
+
+  estilo_corpo <- openxlsx::createStyle(
+    halign = "center",
+    valign = "center",
+    border = "TopBottomLeftRight"
+  )
+
+  estilo_significativo <- openxlsx::createStyle(
+    halign = "center",
+    valign = "center",
+    border = "TopBottomLeftRight",
+    fgFill = "#FFF2CC",
+    fontColour = "#C00000",
+    textDecoration = "bold"
+  )
+
+  aplicar_estilo_tabela <- function(nome_aba, df) {
+
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = nome_aba,
+      style = estilo_cabecalho,
+      rows = 1,
+      cols = 1:ncol(df),
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+
+    if (nrow(df) > 0) {
+      openxlsx::addStyle(
+        wb = wb,
+        sheet = nome_aba,
+        style = estilo_corpo,
+        rows = 2:(nrow(df) + 1),
+        cols = 1:ncol(df),
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+    }
+
+    openxlsx::freezePane(wb, nome_aba, firstRow = TRUE)
+    openxlsx::setColWidths(wb, nome_aba, cols = 1:ncol(df), widths = "auto")
+  }
+
+  # =======================
+  # DADOS
+  # =======================
+  if (!is.null(fit$dados) && is.data.frame(fit$dados)) {
+    dados_df <- fit$dados
+
+    openxlsx::addWorksheet(wb, "Dados")
+    openxlsx::writeData(wb, "Dados", dados_df)
+    aplicar_estilo_tabela("Dados", dados_df)
+  }
+
+  # =======================
   # METRICAS
   # =======================
   met_df <- data.frame(
-    Métrica = c("R²", "R² ajustado", "Erro padrão residual"),
+    `Métrica` = c("R²", "R² ajustado", "Erro padrão residual"),
     Valor = c(
       fit$r2,
       fit$r2_ajustado,
@@ -50,64 +115,73 @@ exportar_excel_dcc <- function(fit,
     check.names = FALSE
   )
 
-  openxlsx::addWorksheet(wb, enc2utf8("Métricas"))
-  openxlsx::writeData(wb, enc2utf8("Métricas"), met_df)
-  openxlsx::freezePane(wb, enc2utf8("Métricas"), firstRow = TRUE)
-  openxlsx::setColWidths(wb, enc2utf8("Métricas"), cols = 1:ncol(met_df), widths = "auto")
+  openxlsx::addWorksheet(wb, "Métricas")
+  openxlsx::writeData(wb, "Métricas", met_df)
+  aplicar_estilo_tabela("Métricas", met_df)
 
   # =======================
   # ANOVA
   # =======================
   anova_df <- as.data.frame(stats::anova(fit$modelo))
+
+  nomes_antigos <- names(anova_df)
+  nomes_novos <- nomes_antigos
+
+  nomes_novos[nomes_antigos == "Df"] <- "GL"
+  nomes_novos[nomes_antigos == "Sum Sq"] <- "SQ"
+  nomes_novos[nomes_antigos == "Mean Sq"] <- "QM"
+  nomes_novos[nomes_antigos == "F value"] <- "F"
+  nomes_novos[nomes_antigos == "Pr(>F)"] <- "p_valor"
+
+  names(anova_df) <- nomes_novos
+
   anova_df$Termo <- rownames(anova_df)
   rownames(anova_df) <- NULL
   anova_df <- anova_df[, c("Termo", setdiff(names(anova_df), "Termo"))]
 
   openxlsx::addWorksheet(wb, "ANOVA")
   openxlsx::writeData(wb, "ANOVA", anova_df)
-  openxlsx::freezePane(wb, "ANOVA", firstRow = TRUE)
-  openxlsx::setColWidths(wb, "ANOVA", cols = 1:ncol(anova_df), widths = "auto")
+  aplicar_estilo_tabela("ANOVA", anova_df)
 
   # =======================
   # COEFICIENTES
   # =======================
-  coef_df <- fit$coeficientes
+  coef_df <- as.data.frame(summary(fit$modelo)$coefficients)
+  coef_df$Termo <- rownames(coef_df)
+  rownames(coef_df) <- NULL
 
-  openxlsx::addWorksheet(wb, enc2utf8("Coeficientes"))
-  openxlsx::writeData(wb, enc2utf8("Coeficientes"), coef_df)
-  openxlsx::freezePane(wb, enc2utf8("Coeficientes"), firstRow = TRUE)
-  openxlsx::setColWidths(wb, enc2utf8("Coeficientes"), cols = 1:ncol(coef_df), widths = "auto")
+  names(coef_df) <- c("Coeficiente", "Erro padrão", "t", "p_valor", "Termo")
+  coef_df <- coef_df[, c("Termo", "Coeficiente", "Erro padrão", "t", "p_valor")]
+
+  openxlsx::addWorksheet(wb, "Coeficientes")
+  openxlsx::writeData(wb, "Coeficientes", coef_df)
+  aplicar_estilo_tabela("Coeficientes", coef_df)
 
   # =======================
   # EFEITOS
   # =======================
-  s <- summary(fit$modelo)
-  efeitos_df <- as.data.frame(s$coefficients, check.names = FALSE)
-  efeitos_df$Termo <- rownames(efeitos_df)
-  rownames(efeitos_df) <- NULL
-  efeitos_df <- efeitos_df[efeitos_df$Termo != "(Intercept)", , drop = FALSE]
+  efeitos_df <- coef_df[coef_df$Termo != "(Intercept)", , drop = FALSE]
+  efeitos_df$Significativo <- ifelse(efeitos_df$p_valor <= alpha, "Sim", "Não")
 
-  efeitos_df$Significativo <- ifelse(efeitos_df$`Pr(>|t|)` <= alpha, "Sim", "Não")
-  efeitos_df <- efeitos_df[, c("Termo", "Estimate", "Std. Error", "t value", "Pr(>|t|)", "Significativo")]
-  efeitos_df$Termo <- as.character(efeitos_df$Termo)
+  openxlsx::addWorksheet(wb, "Efeitos")
+  openxlsx::writeData(wb, "Efeitos", efeitos_df)
+  aplicar_estilo_tabela("Efeitos", efeitos_df)
 
-  openxlsx::addWorksheet(wb, enc2utf8("Efeitos"))
-  openxlsx::writeData(wb, enc2utf8("Efeitos"), efeitos_df)
-  openxlsx::freezePane(wb, enc2utf8("Efeitos"), firstRow = TRUE)
-  openxlsx::setColWidths(wb, enc2utf8("Efeitos"), cols = 1:ncol(efeitos_df), widths = "auto")
+  if ("Significativo" %in% names(efeitos_df) && nrow(efeitos_df) > 0) {
+    linhas_sig <- which(efeitos_df$Significativo == "Sim")
 
-  style_sig <- openxlsx::createStyle(bgFill = "#C6EFCE")
-  col_sig <- which(names(efeitos_df) == "Significativo")
-
-  openxlsx::conditionalFormatting(
-    wb,
-    sheet = enc2utf8("Efeitos"),
-    cols = 1:ncol(efeitos_df),
-    rows = 2:(nrow(efeitos_df) + 1),
-    rule = paste0("$", LETTERS[col_sig], '2="Sim"'),
-    style = style_sig,
-    type = "expression"
-  )
+    if (length(linhas_sig) > 0) {
+      openxlsx::addStyle(
+        wb = wb,
+        sheet = "Efeitos",
+        style = estilo_significativo,
+        rows = linhas_sig + 1,
+        cols = 1:ncol(efeitos_df),
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+    }
+  }
 
   # =======================
   # PARETO
@@ -122,9 +196,17 @@ exportar_excel_dcc <- function(fit,
   openxlsx::writeData(
     wb,
     "Pareto",
-    enc2utf8("Gráfico de Pareto dos efeitos"),
+    enc2utf8("Grafico de Pareto dos efeitos"),
     startRow = 1,
     startCol = 2
+  )
+  openxlsx::addStyle(
+    wb = wb,
+    sheet = "Pareto",
+    style = estilo_cabecalho,
+    rows = 1,
+    cols = 2,
+    stack = TRUE
   )
   openxlsx::insertImage(
     wb, "Pareto", tmp_pareto,
@@ -169,7 +251,6 @@ exportar_excel_dcc <- function(fit,
       arquivos_tmp <- c(arquivos_tmp, tmp_sup)
 
       grDevices::png(tmp_sup, width = 2200, height = 1400, res = 220)
-
       superficie_dcc(fit, x1 = x_plot, x2 = y_plot)
       grDevices::dev.off()
 
@@ -178,14 +259,24 @@ exportar_excel_dcc <- function(fit,
       openxlsx::writeData(
         wb,
         aba_sup,
-        enc2utf8(paste0("Superfície de resposta: ", x_plot, " × ", y_plot)),
+        enc2utf8(paste0("Superficie de resposta: ", x_plot, " × ", y_plot)),
         startRow = 1,
         startCol = 2
+      )
+      openxlsx::addStyle(
+        wb = wb,
+        sheet = aba_sup,
+        style = estilo_cabecalho,
+        rows = 1,
+        cols = 2,
+        stack = TRUE
       )
       openxlsx::insertImage(
         wb, aba_sup, tmp_sup,
         startRow = 3, startCol = 2,
-        width = 11, height = 7, units = "in"
+        width = 11,
+        height = 7,
+        units = "in"
       )
 
       # -----------------------
@@ -204,14 +295,24 @@ exportar_excel_dcc <- function(fit,
       openxlsx::writeData(
         wb,
         aba_cont,
-        enc2utf8(paste0("Gráfico de contorno: ", x_plot, " × ", y_plot)),
+        enc2utf8(paste0("Grafico de contorno: ", x_plot, " × ", y_plot)),
         startRow = 1,
         startCol = 2
+      )
+      openxlsx::addStyle(
+        wb = wb,
+        sheet = aba_cont,
+        style = estilo_cabecalho,
+        rows = 1,
+        cols = 2,
+        stack = TRUE
       )
       openxlsx::insertImage(
         wb, aba_cont, tmp_cont,
         startRow = 3, startCol = 2,
-        width = 11, height = 7, units = "in"
+        width = 11,
+        height = 7,
+        units = "in"
       )
     }
   }

@@ -66,7 +66,7 @@ contorno_dcc <- function(fit, x1, x2, n = 100) {
     color.palette = pal,
     xlab = x1,
     ylab = x2,
-    main = paste("Gráfico de Contorno da", fit$resposta),
+    main = paste("Gráfico de Contorno -", fit$resposta),
     key.title = graphics::title(main = fit$resposta, cex.main = 0.82),
     key.axes = graphics::axis(4, cex.axis = 0.9),
     plot.axes = {

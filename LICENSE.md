@@ -1,6 +1,7 @@
-# MIT License
+MIT License
 
-Copyright (c) 2026 Wanderley Xavier Pereira
+Copyright (c) 2026 Wanderley Xavier Pereira, 
+Augusto Henrique de Sousa Xavier, 
 and Centro Federal de Educacao Tecnologica de Minas Gerais (CEFET-MG)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

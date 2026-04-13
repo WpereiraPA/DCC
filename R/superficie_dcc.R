@@ -80,6 +80,6 @@ superficie_dcc <- function(fit, x1, x2, n = 45) {
     zlab = fit$resposta,
     cex.lab = 1.10,
     cex.axis = 0.85,
-    main = paste("Superfície de Resposta da", fit$resposta)
+    main = paste("Superfície de Resposta -", fit$resposta)
   )
 }
