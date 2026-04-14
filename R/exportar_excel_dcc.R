@@ -184,6 +184,39 @@ exportar_excel_dcc <- function(fit,
   }
 
   # =======================
+  # OTIMO
+  # =======================
+  otimo_df <- NULL
+
+  if (exists("otimo_dcc", mode = "function")) {
+    otimo_df <- tryCatch(
+      otimo_dcc(fit),
+      error = function(e) NULL
+    )
+  }
+
+  if (!is.null(otimo_df)) {
+
+    if (is.matrix(otimo_df)) {
+      otimo_df <- as.data.frame(otimo_df, stringsAsFactors = FALSE)
+    }
+
+    if (is.vector(otimo_df) && !is.list(otimo_df)) {
+      otimo_df <- data.frame(
+        Item = names(otimo_df),
+        Valor = unname(otimo_df),
+        check.names = FALSE
+      )
+    }
+
+    if (is.data.frame(otimo_df)) {
+      openxlsx::addWorksheet(wb, "Ótimo")
+      openxlsx::writeData(wb, "Ótimo", otimo_df)
+      aplicar_estilo_tabela("Ótimo", otimo_df)
+    }
+  }
+
+  # =======================
   # PARETO
   # =======================
   tmp_pareto <- tempfile(fileext = ".png")
