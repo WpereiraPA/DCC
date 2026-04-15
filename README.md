@@ -137,22 +137,54 @@ O relatório contém:
 
 ---
 
-## Exportação completa para Excel
+## Exportação para Excel
+
+O pacote permite duas formas de exportação:
+
+---
+
+###  Exportação rápida
 
 ```r
 exportar_excel_dcc(fit)
 ```
 
-O arquivo gerado contém:
+Inclui:
 
-- aba "Dados" com a matriz experimental utilizada  
-- métricas do modelo  
-- tabela ANOVA  
-- coeficientes  
-- efeitos com destaque de significância  
-- gráfico de Pareto  
-- superfícies de resposta (todas as combinações de fatores)  
-- gráficos de contorno  
+- Dados  
+- Métricas  
+- ANOVA  
+- Coeficientes  
+- Efeitos  
+- Ponto ótimo  
+
+✔ Ideal para análise e documentação rápida
+
+---
+
+###  Exportação completa
+
+```r
+exportar_excel_completo_dcc(fit)
+```
+
+Inclui tudo da versão anterior, além de:
+
+- Gráfico de Pareto  
+- Superfícies de resposta  
+- Gráficos de contorno  
+
+✔ Ideal para interpretação visual e apresentação
+
+---
+
+ Observação:
+
+- os arquivos são gerados automaticamente com data e hora  
+- evita sobrescrita  
+- facilita rastreabilidade dos resultados  
+
+---
 
 ---
 
