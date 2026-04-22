@@ -9,12 +9,12 @@ dcc_fit(dados, resposta, fatores = c("A", "B"))
 \arguments{
 \item{dados}{data.frame com os dados experimentais.}
 
-\item{resposta}{nome da coluna resposta.}
+\item{resposta}{nome da coluna resposta entre aspas.}
 
-\item{fatores}{vetor com os nomes dos fatores.}
+\item{fatores}{vetor com os nomes dos fatores. Padrão \code{c("A", "B")}.}
 }
 \value{
-Um objeto da classe dcc_fit.
+Um objeto da classe \code{dcc_fit}.
 }
 \description{
 Ajusta um modelo quadrático completo para um delineamento composto central

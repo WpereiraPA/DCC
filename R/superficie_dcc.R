@@ -60,6 +60,13 @@ superficie_dcc <- function(fit, x1, x2, n = 45) {
 
   facetcol <- cols[idx]
 
+
+  nome_resp <- if (!is.null(fit$nome_resposta) && nzchar(fit$nome_resposta)) {
+    fit$nome_resposta
+  } else {
+    fit$resposta
+  }
+
   graphics::persp(
     x = xs,
     y = ys,
@@ -77,9 +84,9 @@ superficie_dcc <- function(fit, x1, x2, n = 45) {
     lphi = 25,
     xlab = x1,
     ylab = x2,
-    zlab = fit$resposta,
+    zlab = nome_resp,
     cex.lab = 1.10,
     cex.axis = 0.85,
-    main = paste("Superfície de Resposta -", fit$resposta)
+    main = paste("Superfície de Resposta -", nome_resp)
   )
 }

@@ -4,7 +4,15 @@
 \alias{contorno_dcc}
 \title{Gráfico de contorno para DCC}
 \usage{
-contorno_dcc(fit, x1, x2, n = 100)
+contorno_dcc(
+  fit,
+  x1,
+  x2,
+  n = 100,
+  mostrar_otimo = TRUE,
+  mostrar_estacionario = TRUE,
+  objetivo = "max"
+)
 }
 \arguments{
 \item{fit}{objeto da classe dcc_fit.}
@@ -14,6 +22,12 @@ contorno_dcc(fit, x1, x2, n = 100)
 \item{x2}{nome do segundo fator.}
 
 \item{n}{número de pontos da grade.}
+
+\item{mostrar_otimo}{se TRUE, exibe o ponto ótimo no gráfico.}
+
+\item{mostrar_estacionario}{se TRUE, exibe o ponto estacionário no gráfico.}
+
+\item{objetivo}{objetivo da otimização: "max" para maximizar ou "min" para minimizar.}
 }
 \value{
 Gráfico de contorno.

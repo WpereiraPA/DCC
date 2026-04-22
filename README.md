@@ -99,10 +99,24 @@ sumario_dcc(fit)
 
 anova_dcc(fit)
 coeficientes_dcc(fit)
-
 efeitos_dcc(fit)
+
+# Ponto estacionário
+ponto_estacionario_dcc(fit)
+
+# Avaliação em relação ao objetivo
+avaliar_ponto_estacionario_dcc(fit, objetivo = "min")
 ```
 
+---
+## Otimização
+
+# Minimizar resposta
+otimo_dcc(fit, objetivo = "min")
+
+# Maximizar resposta
+otimo_dcc(fit, objetivo = "max")
+```
 ---
 
 ## Gráficos
@@ -111,9 +125,18 @@ efeitos_dcc(fit)
 pareto_dcc(fit)
 
 superficie_dcc(fit, "A", "B")
-contorno_dcc(fit, "A", "B")
-```
 
+contorno_dcc(fit, "A", "B")
+
+# Versão com interpretação completa
+contorno_dcc(
+  fit,
+  "A", "B",
+  mostrar_otimo = TRUE,
+  mostrar_estacionario = TRUE,
+  objetivo = "min"
+)
+```
 ---
 
 ## Exportar relatório
@@ -157,6 +180,7 @@ Inclui:
 - Coeficientes  
 - Efeitos  
 - Ponto ótimo  
+- Ponto estacionário  
 
 ✔ Ideal para análise e documentação rápida
 
@@ -166,8 +190,22 @@ Inclui:
 
 ```r
 exportar_excel_completo_dcc(fit)
+ponto_estacionario_dcc(fit)
 ```
+---
+## Ponto estacionário vs ponto ótimo
 
+O ponto estacionário é obtido analiticamente a partir do modelo quadrático e representa o ponto crítico da superfície de resposta.
+
+Dependendo dos autovalores da matriz B, ele pode ser classificado como:
+
+- máximo local  
+- mínimo local  
+- ponto de sela  
+
+O ponto ótimo, por sua vez, é obtido por otimização numérica e pode não coincidir com o ponto estacionário, especialmente quando este é um ponto de sela.
+
+---
 Inclui tudo da versão anterior, além de:
 
 - Gráfico de Pareto  
@@ -184,7 +222,6 @@ Inclui tudo da versão anterior, além de:
 - evita sobrescrita  
 - facilita rastreabilidade dos resultados  
 
----
 
 ---
 

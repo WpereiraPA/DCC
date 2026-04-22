@@ -1,71 +1,94 @@
 #' Ponto ótimo previsto para DCC
 #'
 #' @param fit objeto da classe dcc_fit.
-#' @param tipo "min" para minimizar a resposta ou "max" para maximizar.
+#' @param objetivo "min" para minimizar a resposta ou "max" para maximizar.
 #'
-#' @return data.frame com o ponto ótimo previsto e o valor estimado da resposta.
+#' @return Lista com o ponto ótimo previsto, resposta estimada,
+#' convergência, valor otimizado e objetivo.
 #' @export
-otimo_dcc <- function(fit, tipo = c("min", "max")) {
+otimo_dcc <- function(fit, objetivo = c("min", "max")) {
 
-  tipo <- match.arg(tipo)
-
-  if (!inherits(fit, "dcc_fit")) {
-    stop("O objeto fit precisa ser da classe 'dcc_fit'.")
+  if (missing(fit)) {
+    stop("O argumento 'fit' é obrigatório.")
   }
+
+  if (!inherits(fit, "dcc_fit") || is.null(fit$modelo) || is.null(fit$fatores)) {
+    stop("O objeto 'fit' precisa ser da classe 'dcc_fit'.")
+  }
+
+  objetivo <- match.arg(objetivo)
 
   fatores <- fit$fatores
+  k <- length(fatores)
 
-  if (length(fatores) != 2) {
-    stop("Nesta versão, otimo_dcc() foi preparado para 2 fatores.")
+  if (k < 2) {
+    stop("O modelo precisa ter pelo menos dois fatores.")
   }
 
-  x1 <- fatores[1]
-  x2 <- fatores[2]
-
-  lim_inf <- c(min(fit$dados[[x1]]), min(fit$dados[[x2]]))
-  lim_sup <- c(max(fit$dados[[x1]]), max(fit$dados[[x2]]))
+  lim_inf <- vapply(fatores, function(f) min(fit$dados[[f]], na.rm = TRUE), numeric(1))
+  lim_sup <- vapply(fatores, function(f) max(fit$dados[[f]], na.rm = TRUE), numeric(1))
 
   f_obj <- function(par) {
-    novo <- data.frame(x = par[1], y = par[2])
-    names(novo) <- c(x1, x2)
+    novo <- as.data.frame(as.list(par))
+    names(novo) <- fatores
 
-    novo$AA <- novo[[x1]]^2
-    novo$BB <- novo[[x2]]^2
-    novo$AB <- novo[[x1]] * novo[[x2]]
+    pred <- tryCatch(
+      as.numeric(stats::predict(fit$modelo, newdata = novo)),
+      error = function(e) NA_real_
+    )
 
-    pred <- stats::predict(fit$modelo, newdata = novo)
+    if (is.na(pred) || !is.finite(pred)) {
+      return(Inf)
+    }
 
-    if (tipo == "min") pred else -pred
+    if (objetivo == "min") pred else -pred
   }
 
-  inicio <- c(mean(lim_inf[1:2]), mean(lim_sup[1:2]))
-  inicio <- c(mean(c(lim_inf[1], lim_sup[1])),
-              mean(c(lim_inf[2], lim_sup[2])))
+  inicio <- (lim_inf + lim_sup) / 2
 
-  res <- stats::optim(
-    par = inicio,
-    fn = f_obj,
-    method = "L-BFGS-B",
-    lower = lim_inf,
-    upper = lim_sup
+  res <- tryCatch(
+    stats::optim(
+      par = inicio,
+      fn = f_obj,
+      method = "L-BFGS-B",
+      lower = lim_inf,
+      upper = lim_sup
+    ),
+    error = function(e) NULL
   )
 
-  x_ot <- res$par[1]
-  y_ot <- res$par[2]
+  if (is.null(res) || is.null(res$par) || any(!is.finite(res$par))) {
 
-  novo_ot <- data.frame(x = x_ot, y = y_ot)
-  names(novo_ot) <- c(x1, x2)
+    ponto_otimo <- stats::setNames(rep(NA_real_, k), fatores)
+    resposta_prevista <- NA_real_
+    convergencia <- 1
+    valor_otimizado <- NA_real_
 
-  novo_ot$AA <- novo_ot[[x1]]^2
-  novo_ot$BB <- novo_ot[[x2]]^2
-  novo_ot$AB <- novo_ot[[x1]] * novo_ot[[x2]]
+  } else {
 
-  resposta_prevista <- stats::predict(fit$modelo, newdata = novo_ot)
+    ponto_otimo <- res$par
+    names(ponto_otimo) <- fatores
 
-  out <- data.frame(
-    Fator = c(x1, x2, fit$resposta),
-    Valor = c(x_ot, y_ot, as.numeric(resposta_prevista))
+    novo_ot <- as.data.frame(as.list(ponto_otimo))
+    resposta_prevista <- tryCatch(
+      as.numeric(stats::predict(fit$modelo, newdata = novo_ot)),
+      error = function(e) NA_real_
+    )
+
+    convergencia <- res$convergence
+    valor_otimizado <- if (objetivo == "min") res$value else -res$value
+  }
+
+  resultado <- list(
+    ponto = ponto_otimo,
+    resposta = resposta_prevista,
+    convergencia = convergencia,
+    valor_otimizado = valor_otimizado,
+    objetivo = objetivo,
+    nome_resposta = fit$nome_resposta
   )
 
-  out
+  class(resultado) <- "otimo_dcc"
+
+  return(resultado)
 }

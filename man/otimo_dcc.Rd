@@ -4,15 +4,16 @@
 \alias{otimo_dcc}
 \title{Ponto ótimo previsto para DCC}
 \usage{
-otimo_dcc(fit, tipo = c("min", "max"))
+otimo_dcc(fit, objetivo = c("min", "max"))
 }
 \arguments{
 \item{fit}{objeto da classe dcc_fit.}
 
-\item{tipo}{"min" para minimizar a resposta ou "max" para maximizar.}
+\item{objetivo}{"min" para minimizar a resposta ou "max" para maximizar.}
 }
 \value{
-data.frame com o ponto ótimo previsto e o valor estimado da resposta.
+Lista com o ponto ótimo previsto, resposta estimada,
+convergência, valor otimizado e objetivo.
 }
 \description{
 Ponto ótimo previsto para DCC

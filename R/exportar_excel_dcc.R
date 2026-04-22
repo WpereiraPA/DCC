@@ -261,34 +261,157 @@ exportar_excel_completo_dcc <- function(fit,
   # =======================
   # OTIMO
   # =======================
-  otimo_df <- NULL
+  ot <- NULL
 
   if (exists("otimo_dcc", mode = "function")) {
-    otimo_df <- tryCatch(
-      otimo_dcc(fit),
+    ot <- tryCatch(
+      otimo_dcc(fit, objetivo = "min"),
       error = function(e) NULL
     )
   }
 
-  if (!is.null(otimo_df)) {
+  if (!is.null(ot)) {
 
-    if (is.matrix(otimo_df)) {
-      otimo_df <- as.data.frame(otimo_df, stringsAsFactors = FALSE)
+    df_objetivo <- data.frame(
+      Item = "Objetivo",
+      Valor = ifelse(!is.null(ot$objetivo) && ot$objetivo == "min", "Minimizar", "Maximizar"),
+      check.names = FALSE
+    )
+
+    df_ponto <- data.frame(
+      Item = names(ot$ponto),
+      Valor = as.numeric(ot$ponto),
+      check.names = FALSE
+    )
+
+    nome_resp <- if (!is.null(ot$nome_resposta) && nzchar(ot$nome_resposta)) {
+      ot$nome_resposta
+    } else if (!is.null(fit$nome_resposta) && nzchar(fit$nome_resposta)) {
+      fit$nome_resposta
+    } else {
+      "Resposta"
     }
 
-    if (is.vector(otimo_df) && !is.list(otimo_df)) {
-      otimo_df <- data.frame(
-        Item = names(otimo_df),
-        Valor = unname(otimo_df),
-        check.names = FALSE
-      )
+    df_resposta <- data.frame(
+      Item = nome_resp,
+      Valor = as.numeric(ot$resposta),
+      check.names = FALSE
+    )
+
+    df_conv <- data.frame(
+      Item = "Convergência",
+      Valor = ifelse(isTRUE(ot$convergencia == 0), "sucesso", "falha"),
+      check.names = FALSE
+    )
+
+    df_valor <- data.frame(
+      Item = "Valor otimizado",
+      Valor = as.numeric(ot$valor_otimizado),
+      check.names = FALSE
+    )
+
+    otimo_df <- rbind(df_objetivo, df_ponto, df_resposta, df_conv, df_valor)
+
+    openxlsx::addWorksheet(wb, "Ótimo")
+    openxlsx::writeData(wb, "Ótimo", otimo_df)
+    aplicar_estilo_tabela("Ótimo", otimo_df)
+  }
+
+  # =======================
+  # PONTO ESTACIONARIO
+  # =======================
+  pe <- NULL
+
+  if (exists("ponto_estacionario_dcc", mode = "function")) {
+    pe <- tryCatch(
+      ponto_estacionario_dcc(fit),
+      error = function(e) NULL
+    )
+  }
+
+  if (!is.null(pe)) {
+
+    nome_resp <- if (!is.null(fit$nome_resposta) && nzchar(fit$nome_resposta)) {
+      fit$nome_resposta
+    } else {
+      "Resposta"
     }
 
-    if (is.data.frame(otimo_df)) {
-      openxlsx::addWorksheet(wb, "Ótimo")
-      openxlsx::writeData(wb, "Ótimo", otimo_df)
-      aplicar_estilo_tabela("Ótimo", otimo_df)
+    resumo_df <- data.frame(
+      Item = c(
+        "Classificação do ponto estacionário",
+        paste0("Resposta estimada (", nome_resp, ")"),
+        "Status"
+      ),
+      Valor = c(
+        pe$classificacao,
+        pe$resposta_estimada,
+        ifelse(pe$convergencia == 0, "Sucesso", "Falha")
+      ),
+      check.names = FALSE
+    )
+
+    coord_df <- data.frame(
+      Fator = names(pe$ponto),
+      Valor = as.numeric(pe$ponto[1, ]),
+      check.names = FALSE
+    )
+
+    autoval_df <- data.frame(
+      Autovalor = paste0("λ", seq_along(pe$autovalores)),
+      Valor = pe$autovalores,
+      check.names = FALSE
+    )
+
+    interpretacao <- if (all(is.na(pe$autovalores))) {
+      "Não foi possível interpretar os autovalores da matriz B."
+    } else if (all(pe$autovalores < 0)) {
+      "Todos os autovalores negativos: máximo local."
+    } else if (all(pe$autovalores > 0)) {
+      "Todos os autovalores positivos: mínimo local."
+    } else {
+      "Autovalores com sinais mistos: ponto de sela."
     }
+
+    interp_df <- data.frame(
+      Interpretação = interpretacao,
+      check.names = FALSE
+    )
+
+    openxlsx::addWorksheet(wb, "Ponto Estacionário")
+
+    openxlsx::writeData(wb, "Ponto Estacionário", resumo_df, startRow = 2)
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_cabecalho,
+      rows = 2, cols = 1:ncol(resumo_df), gridExpand = TRUE, stack = TRUE
+    )
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_corpo,
+      rows = 3:(nrow(resumo_df) + 2), cols = 1:ncol(resumo_df), gridExpand = TRUE, stack = TRUE
+    )
+
+    openxlsx::writeData(wb, "Ponto Estacionário", coord_df, startRow = 8)
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_cabecalho,
+      rows = 8, cols = 1:ncol(coord_df), gridExpand = TRUE, stack = TRUE
+    )
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_corpo,
+      rows = 9:(nrow(coord_df) + 8), cols = 1:ncol(coord_df), gridExpand = TRUE, stack = TRUE
+    )
+
+    openxlsx::writeData(wb, "Ponto Estacionário", autoval_df, startRow = 13)
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_cabecalho,
+      rows = 13, cols = 1:ncol(autoval_df), gridExpand = TRUE, stack = TRUE
+    )
+    openxlsx::addStyle(
+      wb, "Ponto Estacionário", estilo_corpo,
+      rows = 14:(nrow(autoval_df) + 13), cols = 1:ncol(autoval_df), gridExpand = TRUE, stack = TRUE
+    )
+
+    openxlsx::writeData(wb, "Ponto Estacionário", interp_df, startRow = 19)
+    openxlsx::setColWidths(wb, "Ponto Estacionário", cols = 1:2, widths = "auto")
   }
 
   arquivos_tmp <- character(0)
@@ -452,3 +575,4 @@ exportar_excel_completo_dcc <- function(fit,
 
   invisible(caminho)
 }
+
