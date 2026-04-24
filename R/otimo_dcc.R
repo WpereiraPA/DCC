@@ -31,6 +31,7 @@ otimo_dcc <- function(fit, objetivo = c("min", "max")) {
   f_obj <- function(par) {
     novo <- as.data.frame(as.list(par))
     names(novo) <- fatores
+    novo <- novo[, fatores, drop = FALSE]
 
     pred <- tryCatch(
       as.numeric(stats::predict(fit$modelo, newdata = novo)),
@@ -70,6 +71,8 @@ otimo_dcc <- function(fit, objetivo = c("min", "max")) {
     names(ponto_otimo) <- fatores
 
     novo_ot <- as.data.frame(as.list(ponto_otimo))
+    novo_ot <- novo_ot[, fatores, drop = FALSE]
+
     resposta_prevista <- tryCatch(
       as.numeric(stats::predict(fit$modelo, newdata = novo_ot)),
       error = function(e) NA_real_

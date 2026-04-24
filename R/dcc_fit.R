@@ -1,7 +1,7 @@
 #' Ajustar modelo quadrático para DCC
 #'
-#' Ajusta um modelo quadrático completo para um delineamento composto central
-#' com 2 fatores, gerando automaticamente os termos AA, BB e AB.
+#' Ajusta um modelo quadrático completo para um Delineamento Composto Central,
+#' considerando efeitos lineares, interações de segunda ordem e termos quadráticos.
 #'
 #' @param dados data.frame com os dados experimentais.
 #' @param resposta nome da coluna resposta entre aspas.
@@ -23,8 +23,12 @@ dcc_fit <- function(dados, resposta, fatores = c("A", "B")) {
     stop("A coluna de resposta não foi encontrada nos dados.")
   }
 
-  if (missing(fatores) || !is.character(fatores) || length(fatores) != 2 || any(is.na(fatores)) || any(trimws(fatores) == "")) {
-    stop("O argumento 'fatores' deve ser um vetor de duas strings não vazias.")
+  if (missing(fatores) || !is.character(fatores) || length(fatores) < 2 || length(fatores) > 5 || any(is.na(fatores)) || any(trimws(fatores) == "")) {
+    stop("O argumento 'fatores' deve ser um vetor de 2 a 5 strings não vazias.")
+  }
+
+  if (any(duplicated(fatores))) {
+    stop("O argumento 'fatores' não pode conter nomes repetidos.")
   }
 
   if (!all(fatores %in% names(dados))) {
@@ -47,7 +51,11 @@ dcc_fit <- function(dados, resposta, fatores = c("A", "B")) {
 
   termo_linear <- paste(fatores, collapse = " + ")
 
-  interacoes <- utils::combn(fatores, 2, function(x) paste(x, collapse = ":"))
+  interacoes <- utils::combn(
+    fatores,
+    2,
+    function(x) paste(x, collapse = ":")
+  )
   termo_interacao <- paste(interacoes, collapse = " + ")
 
   quadrados <- paste0("I(", fatores, "^2)")
@@ -73,7 +81,9 @@ dcc_fit <- function(dados, resposta, fatores = c("A", "B")) {
   rownames(tabela_coef) <- NULL
   tabela_coef <- tabela_coef[, c("Termo", setdiff(names(tabela_coef), "Termo")), drop = FALSE]
 
-  names(tabela_coef)[1:5] <- c("Termo", "Estimativa", "Erro_Padrao", "t_valor", "p_valor")
+  if (ncol(tabela_coef) >= 5) {
+    names(tabela_coef)[1:5] <- c("Termo", "Estimativa", "Erro_Padrao", "t_valor", "p_valor")
+  }
 
   aviso <- NULL
 

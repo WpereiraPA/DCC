@@ -6,6 +6,7 @@
 
 Pacote em R para análise de Delineamentos Composto Central (Central Composite Designs).
 
+O pacote permite o ajuste de modelos quadráticos para DCC com 2 a 5 fatores, com visualização gráfica realizada por pares de fatores.
 ---
 
 ## Descrição
@@ -23,7 +24,8 @@ Permite:
 - gráficos de superfície de resposta  
 - gráficos de contorno  
 - exportação completa para Excel  
-- geração automática de relatório analítico  
+- geração automática de relatório analítico
+
 
 Indicado para pesquisadores, estudantes e profissionais que trabalham com planejamento experimental e otimização de processos.
 
@@ -62,8 +64,11 @@ dados <- read_clipboard_dcc()
 ```r
 fit <- dcc_fit(
   dados,
-  resposta = "Rugosidade"
+  resposta = "Rugosidade",
+  fatores = c("A", "B", "C")
 )
+O argumento `fatores` deve receber os nomes das colunas correspondentes aos fatores experimentais. Para gráficos de superfície 
+e contorno, os fatores são analisados em pares, mantendo os demais fixados no nível central.
 ```
 
 ---
@@ -105,7 +110,11 @@ efeitos_dcc(fit)
 ponto_estacionario_dcc(fit)
 
 # Avaliação em relação ao objetivo
+valiar_ponto_estacionario_dcc(fit, objetivo = "max")   ou
 avaliar_ponto_estacionario_dcc(fit, objetivo = "min")
+
+O ponto estacionário é classificado automaticamente como máximo local, mínimo 
+local ou ponto de sela, a partir dos autovalores da matriz B.
 ```
 
 ---
@@ -118,6 +127,11 @@ otimo_dcc(fit, objetivo = "min")
 otimo_dcc(fit, objetivo = "max")
 ```
 ---
+# Exemplo de maximização
+fit <- dcc_fit(dados, resposta = "Rendimento", fatores = c("A","B","C"))
+otimo_dcc(fit, objetivo = "max")
+```
+---
 
 ## Gráficos
 
@@ -125,8 +139,13 @@ otimo_dcc(fit, objetivo = "max")
 pareto_dcc(fit)
 
 superficie_dcc(fit, "A", "B")
+superficie_dcc(fit, "A", "C")
+superficie_dcc(fit, "B", "C")
 
-contorno_dcc(fit, "A", "B")
+contorno_dcc(fit, "A", "B") ou
+contorno_dcc(fit, "A", "B", objetivo = "max")
+contorno_dcc(fit, "A", "C", objetivo = "max")
+contorno_dcc(fit, "B", "C", objetivo = "max")
 
 # Versão com interpretação completa
 contorno_dcc(
@@ -135,6 +154,16 @@ contorno_dcc(
   mostrar_otimo = TRUE,
   mostrar_estacionario = TRUE,
   objetivo = "min"
+)
+
+Quando o ponto ótimo e o ponto estacionário coincidirem ou estiverem muito próximos, recomenda-se exibir apenas o ponto ótimo no gráfico, evitando sobreposição visual:
+
+```r
+contorno_dcc(
+  fit, "A", "B",
+  mostrar_otimo = TRUE,
+  mostrar_estacionario = FALSE,
+  objetivo = "max"
 )
 ```
 ---
@@ -221,7 +250,8 @@ Inclui tudo da versão anterior, além de:
 - os arquivos são gerados automaticamente com data e hora  
 - evita sobrescrita  
 - facilita rastreabilidade dos resultados  
-
+- A versão atual amplia o uso do pacote para modelos DCC com 2 a 5 fatores, mantendo
+  a visualização gráfica por pares e a otimização numérica para múltiplos fatores.
 
 ---
 
@@ -234,19 +264,32 @@ dados <- read_clipboard_dcc()
 
 fit <- dcc_fit(
   dados,
-  resposta = "Rugosidade"
+  resposta = "Rugosidade",
+  fatores = c("A", "B", "C")
 )
 
 sumario_dcc(fit)
 
 anova_dcc(fit)
 coeficientes_dcc(fit)
-
 efeitos_dcc(fit)
 
 pareto_dcc(fit)
+
+otimo_dcc(fit, objetivo = "max")
+ponto_estacionario_dcc(fit)
+avaliar_ponto_estacionario_dcc(fit, objetivo = "max")
+
 superficie_dcc(fit, "A", "B")
-contorno_dcc(fit, "A", "B")
+superficie_dcc(fit, "A", "C")
+superficie_dcc(fit, "B", "C")
+
+contorno_dcc(
+  fit, "A", "B",
+  mostrar_otimo = TRUE,
+  mostrar_estacionario = FALSE,
+  objetivo = "max"
+)
 
 exportar_relatorio_dcc(
   fit,
@@ -254,9 +297,10 @@ exportar_relatorio_dcc(
 )
 
 exportar_excel_dcc(fit)
-```
+exportar_excel_completo_dcc(fit)
 
 ---
+
 
 ## Aplicações
 

@@ -16,7 +16,7 @@ superficie_dcc(fit, x1, x2, n = 45)
 \item{n}{número de pontos da grade.}
 }
 \value{
-Gráfico de superfície.
+Invisivelmente, uma lista com grade e matriz de predições.
 }
 \description{
 Gráfico de superfície de resposta para DCC

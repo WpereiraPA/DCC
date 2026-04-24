@@ -23,33 +23,35 @@ ponto_estacionario_dcc <- function(fit) {
   coefs <- stats::coef(modelo)
   k <- length(fatores)
 
-  if (k < 2) {
-    stop("O modelo precisa ter pelo menos dois fatores.")
+  if (k < 2 || k > 5) {
+    stop("O modelo precisa ter entre 2 e 5 fatores.")
   }
 
   b <- stats::setNames(rep(0, k), fatores)
   B <- matrix(0, nrow = k, ncol = k, dimnames = list(fatores, fatores))
 
-  # Termos lineares e quadráticos
   for (f in fatores) {
 
     if (f %in% names(coefs)) {
       b[f] <- unname(coefs[f])
     }
 
-    termo_quad <- grep(paste0("^I\\(", f, "\\^2\\)$"), names(coefs), value = TRUE)
+    termo_quad <- grep(
+      paste0("^I\\(", f, "\\^2\\)$"),
+      names(coefs),
+      value = TRUE
+    )
 
     if (length(termo_quad) == 1) {
       B[f, f] <- 2 * unname(coefs[termo_quad])
     }
   }
 
-  # Interações
   combinacoes <- utils::combn(fatores, 2, simplify = FALSE)
 
   for (par in combinacoes) {
 
-    padrao <- paste0("(", par[1], ":", par[2], "|", par[2], ":", par[1], ")")
+    padrao <- paste0("^(", par[1], ":", par[2], "|", par[2], ":", par[1], ")$")
     termo_inter <- grep(padrao, names(coefs), value = TRUE)
 
     beta_ij <- 0
@@ -62,7 +64,6 @@ ponto_estacionario_dcc <- function(fit) {
     B[par[2], par[1]] <- beta_ij
   }
 
-  # Autovalores
   autovalores <- tryCatch(
     eigen(B, symmetric = TRUE, only.values = TRUE)$values,
     error = function(e) rep(NA_real_, k)
@@ -80,12 +81,10 @@ ponto_estacionario_dcc <- function(fit) {
     "sela"
   }
 
-  # Resolver sistema
-  if (abs(det(B)) < 1e-12) {
-    solucao <- NULL
-  } else {
-    solucao <- tryCatch(solve(B, b), error = function(e) NULL)
-  }
+  solucao <- tryCatch(
+    solve(B, b),
+    error = function(e) NULL
+  )
 
   if (is.null(solucao) || any(!is.finite(solucao))) {
 
@@ -103,8 +102,14 @@ ponto_estacionario_dcc <- function(fit) {
     names(ponto) <- fatores
 
     ponto_df <- as.data.frame(as.list(ponto))
-    resposta_estimada <- as.numeric(stats::predict(modelo, newdata = ponto_df))
-    convergencia <- 0
+    ponto_df <- ponto_df[, fatores, drop = FALSE]
+
+    resposta_estimada <- tryCatch(
+      as.numeric(stats::predict(modelo, newdata = ponto_df)),
+      error = function(e) NA_real_
+    )
+
+    convergencia <- ifelse(is.finite(resposta_estimada), 0, 1)
   }
 
   resultado <- list(

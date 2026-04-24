@@ -2,18 +2,18 @@
 % Please edit documentation in R/pareto_dcc.R
 \name{pareto_dcc}
 \alias{pareto_dcc}
-\title{Grafico de Pareto dos efeitos padronizados no DCC}
+\title{Gráfico de Pareto dos efeitos padronizados no DCC}
 \usage{
 pareto_dcc(obj, alpha = 0.05)
 }
 \arguments{
 \item{obj}{objeto da classe dcc_fit.}
 
-\item{alpha}{nivel de significancia.}
+\item{alpha}{nível de significância.}
 }
 \value{
-Invisivelmente, a tabela usada no grafico.
+Invisivelmente, a tabela usada no gráfico.
 }
 \description{
-Grafico de Pareto dos efeitos padronizados no DCC
+Gráfico de Pareto dos efeitos padronizados no DCC
 }

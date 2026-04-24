@@ -68,6 +68,14 @@ contorno_dcc <- function(fit,
   grade <- expand.grid(xs, ys, KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
   names(grade) <- c(x1, x2)
 
+  outros_fatores <- setdiff(fit$fatores, c(x1, x2))
+
+  if (length(outros_fatores) > 0) {
+    for (f in outros_fatores) {
+      grade[[f]] <- 0
+    }
+  }
+
   grade <- grade[, fit$fatores, drop = FALSE]
 
   z <- tryCatch(

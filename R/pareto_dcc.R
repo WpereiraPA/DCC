@@ -1,14 +1,18 @@
-#' Grafico de Pareto dos efeitos padronizados no DCC
+#' Gráfico de Pareto dos efeitos padronizados no DCC
 #'
 #' @param obj objeto da classe dcc_fit.
-#' @param alpha nivel de significancia.
+#' @param alpha nível de significância.
 #'
-#' @return Invisivelmente, a tabela usada no grafico.
+#' @return Invisivelmente, a tabela usada no gráfico.
 #' @export
 pareto_dcc <- function(obj, alpha = 0.05) {
 
   if (!inherits(obj, "dcc_fit")) {
     stop("O objeto deve ser da classe 'dcc_fit'.")
+  }
+
+  if (!is.numeric(alpha) || length(alpha) != 1 || is.na(alpha) || alpha <= 0 || alpha >= 1) {
+    stop("O argumento 'alpha' deve ser numérico entre 0 e 1.")
   }
 
   s <- summary(obj$modelo)
@@ -19,15 +23,16 @@ pareto_dcc <- function(obj, alpha = 0.05) {
 
   tab <- tab[tab$Termo != "(Intercept)", , drop = FALSE]
 
-  A <- obj$fatores[1]
-  B <- obj$fatores[2]
+  formatar_termo <- function(x) {
+    x <- as.character(x)
 
-  tab$TermoBonito <- tab$Termo
-  tab$TermoBonito[tab$Termo == A] <- A
-  tab$TermoBonito[tab$Termo == B] <- B
-  tab$TermoBonito[tab$Termo == "AA"] <- paste0(A, "\u00B2")
-  tab$TermoBonito[tab$Termo == "BB"] <- paste0(B, "\u00B2")
-  tab$TermoBonito[tab$Termo == "AB"] <- paste0(A, "\u00D7", B)
+    x <- gsub(":", " × ", x, fixed = TRUE)
+    x <- gsub("I\\(([^\\)]+)\\^2\\)", "\\1²", x)
+
+    x
+  }
+
+  tab$TermoBonito <- vapply(tab$Termo, formatar_termo, character(1))
 
   tab$EfeitoPadronizado <- abs(tab$`t value`)
 
@@ -35,10 +40,18 @@ pareto_dcc <- function(obj, alpha = 0.05) {
 
   linha_sig <- stats::qt(1 - alpha / 2, df = obj$gl_residual)
 
+  nome_resp <- if (!is.null(obj$nome_resposta) && nzchar(obj$nome_resposta)) {
+    obj$nome_resposta
+  } else if (!is.null(obj$resposta) && nzchar(obj$resposta)) {
+    obj$resposta
+  } else {
+    "Resposta"
+  }
+
   old_mar <- graphics::par("mar")
   on.exit(graphics::par(mar = old_mar))
 
-  graphics::par(mar = c(5, 7, 5, 2))
+  graphics::par(mar = c(5, 8, 5, 2))
 
   bp <- graphics::barplot(
     tab$EfeitoPadronizado,
@@ -51,13 +64,11 @@ pareto_dcc <- function(obj, alpha = 0.05) {
     ylab = "Termos",
     main = paste0(
       "Pareto dos Efeitos Padronizados\n(",
-      obj$resposta, "; \u03B1 = ", alpha, ")"
+      nome_resp, "; α = ", alpha, ")"
     )
   )
 
   graphics::abline(v = linha_sig, col = "red", lwd = 2, lty = 2)
-
-  xmax <- max(tab$EfeitoPadronizado)
 
   graphics::text(
     x = linha_sig,

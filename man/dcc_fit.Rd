@@ -17,6 +17,6 @@ dcc_fit(dados, resposta, fatores = c("A", "B"))
 Um objeto da classe \code{dcc_fit}.
 }
 \description{
-Ajusta um modelo quadrático completo para um delineamento composto central
-com 2 fatores, gerando automaticamente os termos AA, BB e AB.
+Ajusta um modelo quadrático completo para um Delineamento Composto Central,
+considerando efeitos lineares, interações de segunda ordem e termos quadráticos.
 }
