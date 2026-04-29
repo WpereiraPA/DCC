@@ -9,13 +9,20 @@
 #' @param alpha nivel de significancia para destacar efeitos
 #' @param fatores vetor opcional com os fatores a considerar nos graficos;
 #'   se NULL, usa fit$fatores
+#' @param fatores vetor opcional com os fatores a considerar nos graficos;
+#'   se NULL, usa fit$fatores
+#' @param objetivo objetivo da otimização: "min" para minimizar ou "max" para maximizar.
 #'
 #' @return invisivelmente, o caminho do arquivo gerado
 #' @export
+
 exportar_excel_dcc <- function(fit,
                                arquivo = NULL,
                                alpha = 0.05,
-                               fatores = NULL) {
+                               fatores = NULL,
+                               objetivo = c("min", "max")) {
+
+  objetivo <- match.arg(objetivo)
 
   if (is.null(arquivo)) {
     timestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -31,6 +38,7 @@ exportar_excel_dcc <- function(fit,
     arquivo = arquivo,
     alpha = alpha,
     fatores = fatores,
+    objetivo = objetivo,
     incluir_graficos = FALSE
   )
 }
@@ -48,12 +56,22 @@ exportar_excel_dcc <- function(fit,
 #' @param fatores vetor opcional com os fatores a considerar nos graficos;
 #'   se NULL, usa fit$fatores
 #'
+#' @param fit objeto da classe dcc_fit
+#' @param arquivo caminho completo do arquivo Excel. Se NULL, gera automaticamente com data e hora.
+#' @param alpha nivel de significancia para destacar efeitos
+#' @param fatores vetor opcional com os fatores a considerar nos graficos;
+#'   se NULL, usa fit$fatores
+#' @param objetivo objetivo da otimizacao: "min" para minimizar ou "max" para maximizar.
+#'
 #' @return invisivelmente, o caminho do arquivo gerado
 #' @export
 exportar_excel_completo_dcc <- function(fit,
                                         arquivo = NULL,
                                         alpha = 0.05,
-                                        fatores = NULL) {
+                                        fatores = NULL,
+                                        objetivo = c("min", "max")) {
+
+  objetivo <- match.arg(objetivo)
 
   if (is.null(arquivo)) {
     timestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
@@ -69,6 +87,7 @@ exportar_excel_completo_dcc <- function(fit,
     arquivo = arquivo,
     alpha = alpha,
     fatores = fatores,
+    objetivo = objetivo,
     incluir_graficos = TRUE
   )
 }
@@ -77,6 +96,7 @@ exportar_excel_completo_dcc <- function(fit,
                                      arquivo,
                                      alpha,
                                      fatores,
+                                     objetivo,
                                      incluir_graficos = FALSE) {
 
   if (!inherits(fit, "dcc_fit")) {
@@ -265,7 +285,7 @@ exportar_excel_completo_dcc <- function(fit,
 
   if (exists("otimo_dcc", mode = "function")) {
     ot <- tryCatch(
-      otimo_dcc(fit, objetivo = "min"),
+      otimo_dcc(fit, objetivo = objetivo),
       error = function(e) NULL
     )
   }
@@ -527,7 +547,12 @@ exportar_excel_completo_dcc <- function(fit,
 
         grDevices::png(tmp_cont, width = 2200, height = 1400, res = 220)
         graphics::par(cex = 1.25, cex.axis = 1.1, cex.lab = 1.15, cex.main = 1.2)
-        contorno_dcc(fit, x1 = x_plot, x2 = y_plot)
+        contorno_dcc(
+          fit,
+          x1 = x_plot,
+          x2 = y_plot,
+          objetivo = objetivo
+        )
         grDevices::dev.off()
 
         aba_cont <- nome_aba_seguro("Cont", x_plot, y_plot)

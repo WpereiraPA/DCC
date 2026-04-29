@@ -296,9 +296,15 @@ exportar_relatorio_dcc(
   arquivo = "Relatorio_DCC"
 )
 
-exportar_excel_dcc(fit)
-exportar_excel_completo_dcc(fit)
+# Exportação (maximizar)
 
+exportar_excel_dcc(fit, objetivo = "max")
+exportar_excel_completo_dcc(fit, objetivo = "max")
+
+# Para minimizar a resposta
+
+exportar_excel_dcc(fit, objetivo = "min")
+exportar_excel_completo_dcc(fit, objetivo = "min")
 ---
 
 

@@ -4,7 +4,13 @@
 \alias{exportar_excel_dcc}
 \title{Exporta resultados do DCC para Excel}
 \usage{
-exportar_excel_dcc(fit, arquivo = NULL, alpha = 0.05, fatores = NULL)
+exportar_excel_dcc(
+  fit,
+  arquivo = NULL,
+  alpha = 0.05,
+  fatores = NULL,
+  objetivo = c("min", "max")
+)
 }
 \arguments{
 \item{fit}{objeto da classe dcc_fit}
@@ -16,6 +22,8 @@ automaticamente com data e hora.}
 
 \item{fatores}{vetor opcional com os fatores a considerar nos graficos;
 se NULL, usa fit$fatores}
+
+\item{objetivo}{objetivo da otimização: "min" para minimizar ou "max" para maximizar.}
 }
 \value{
 invisivelmente, o caminho do arquivo gerado
