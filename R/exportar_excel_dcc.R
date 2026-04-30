@@ -330,7 +330,20 @@ exportar_excel_completo_dcc <- function(fit,
       check.names = FALSE
     )
 
-    otimo_df <- rbind(df_objetivo, df_ponto, df_resposta, df_conv, df_valor)
+    df_obs <- data.frame(
+      Item = "Observação",
+      Valor = ifelse(!is.null(ot$mensagem), ot$mensagem, ""),
+      check.names = FALSE
+    )
+
+    otimo_df <- rbind(
+      df_objetivo,
+      df_ponto,
+      df_resposta,
+      df_conv,
+      df_valor,
+      df_obs
+    )
 
     openxlsx::addWorksheet(wb, "Ótimo")
     openxlsx::writeData(wb, "Ótimo", otimo_df)

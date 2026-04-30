@@ -27,5 +27,9 @@ print.otimo_dcc <- function(x, digits = 4, ...) {
                    "Falha na convergência.")
   cat(status, "\n")
 
+  if (!is.null(x$mensagem)) {
+    cat("\nObservação:\n")
+    cat(x$mensagem, "\n")
+  }
   invisible(x)
 }
