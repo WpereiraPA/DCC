@@ -191,15 +191,38 @@ O relatório contém:
 
 ## Exportação para Excel
 
-O pacote permite duas formas de exportação:
+### Exportação rápida
 
+`# Exportação (maximizar)
+
+``r
+exportar_excel_dcc(fit, objetivo = "max")
+
+
+```
+# Para minimizar a resposta
+
+``r
+exportar_excel_dcc(fit, objetivo = "min")
+```
 ---
 
-###  Exportação rápida
+### Exportação completa
 
 ```r
-exportar_excel_dcc(fit)
+exportar_excel_completo_ddc(fit, objetivo = "max")
+
+# Para minimizar a resposta
+```r
+exportar_excel_completo_dcc(fit, objetivo = "min")
 ```
+
+📌 A aba "Ótimo" inclui automaticamente:
+- coordenadas ótimas  
+- valor da resposta  
+- status de convergência  
+- observação indicando limite ou interior da região experimental  
+---```
 
 Inclui:
 
@@ -212,15 +235,8 @@ Inclui:
 - Ponto estacionário  
 
 ✔ Ideal para análise e documentação rápida
-
----
-
-###  Exportação completa
-
-```r
-exportar_excel_completo_dcc(fit)
-ponto_estacionario_dcc(fit)
 ```
+
 ---
 ## Ponto estacionário vs ponto ótimo
 
