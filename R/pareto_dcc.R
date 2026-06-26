@@ -61,7 +61,6 @@ pareto_dcc <- function(obj, alpha = 0.05) {
     border = "white",
     las = 1,
     xlab = "Efeitos padronizados (|t|)",
-    ylab = "Termos",
     main = paste0(
       "Pareto dos Efeitos Padronizados\n(",
       nome_resp, "; α = ", alpha, ")"
