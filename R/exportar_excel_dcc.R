@@ -292,62 +292,218 @@ exportar_excel_completo_dcc <- function(fit,
 
   if (!is.null(ot)) {
 
-    df_objetivo <- data.frame(
-      Item = "Objetivo",
-      Valor = ifelse(!is.null(ot$objetivo) && ot$objetivo == "min", "Minimizar", "Maximizar"),
-      check.names = FALSE
-    )
+    # Nome da variável resposta
+    nome_resp <- if (!is.null(ot$nome_resposta) &&
+                     nzchar(ot$nome_resposta)) {
 
-    df_ponto <- data.frame(
-      Item = names(ot$ponto),
-      Valor = as.numeric(ot$ponto),
-      check.names = FALSE
-    )
-
-    nome_resp <- if (!is.null(ot$nome_resposta) && nzchar(ot$nome_resposta)) {
       ot$nome_resposta
-    } else if (!is.null(fit$nome_resposta) && nzchar(fit$nome_resposta)) {
+
+    } else if (!is.null(fit$nome_resposta) &&
+               nzchar(fit$nome_resposta)) {
+
       fit$nome_resposta
+
     } else {
+
       "Resposta"
     }
 
-    df_resposta <- data.frame(
-      Item = nome_resp,
-      Valor = as.numeric(ot$resposta),
-      check.names = FALSE
-    )
-
-    df_conv <- data.frame(
-      Item = "Convergência",
-      Valor = ifelse(isTRUE(ot$convergencia == 0), "sucesso", "falha"),
-      check.names = FALSE
-    )
-
-    df_valor <- data.frame(
-      Item = "Valor otimizado",
-      Valor = as.numeric(ot$valor_otimizado),
-      check.names = FALSE
-    )
-
-    df_obs <- data.frame(
-      Item = "Observação",
-      Valor = ifelse(!is.null(ot$mensagem), ot$mensagem, ""),
-      check.names = FALSE
-    )
-
-    otimo_df <- rbind(
-      df_objetivo,
-      df_ponto,
-      df_resposta,
-      df_conv,
-      df_valor,
-      df_obs
-    )
-
+    # Cria a aba
     openxlsx::addWorksheet(wb, "Ótimo")
-    openxlsx::writeData(wb, "Ótimo", otimo_df)
-    aplicar_estilo_tabela("Ótimo", otimo_df)
+
+    # Cabeçalho
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = data.frame(
+        Item = character(),
+        Valor = character()
+      ),
+      startRow = 1,
+      colNames = TRUE
+    )
+
+    linha <- 2
+
+    # Objetivo
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = "Objetivo",
+      startRow = linha,
+      startCol = 1,
+      colNames = FALSE
+    )
+
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = ifelse(
+        !is.null(ot$objetivo) && ot$objetivo == "min",
+        "Minimizar",
+        "Maximizar"
+      ),
+      startRow = linha,
+      startCol = 2,
+      colNames = FALSE
+    )
+
+    linha <- linha + 1
+
+    # Coordenadas do ponto ótimo
+    if (!is.null(ot$ponto)) {
+
+      for (i in seq_along(ot$ponto)) {
+
+        openxlsx::writeData(
+          wb,
+          sheet = "Ótimo",
+          x = names(ot$ponto)[i],
+          startRow = linha,
+          startCol = 1,
+          colNames = FALSE
+        )
+
+        openxlsx::writeData(
+          wb,
+          sheet = "Ótimo",
+          x = as.numeric(ot$ponto[i]),
+          startRow = linha,
+          startCol = 2,
+          colNames = FALSE
+        )
+
+        linha <- linha + 1
+      }
+    }
+
+    # Resposta prevista no ponto ótimo
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = nome_resp,
+      startRow = linha,
+      startCol = 1,
+      colNames = FALSE
+    )
+
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = as.numeric(ot$resposta),
+      startRow = linha,
+      startCol = 2,
+      colNames = FALSE
+    )
+
+    linha <- linha + 1
+
+    # Convergência
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = "Convergência",
+      startRow = linha,
+      startCol = 1,
+      colNames = FALSE
+    )
+
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = ifelse(
+        isTRUE(ot$convergencia == 0),
+        "sucesso",
+        "falha"
+      ),
+      startRow = linha,
+      startCol = 2,
+      colNames = FALSE
+    )
+
+    linha <- linha + 1
+
+    # Valor otimizado
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = "Valor otimizado",
+      startRow = linha,
+      startCol = 1,
+      colNames = FALSE
+    )
+
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = as.numeric(ot$valor_otimizado),
+      startRow = linha,
+      startCol = 2,
+      colNames = FALSE
+    )
+
+    linha <- linha + 1
+
+    # Observação
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = "Observação",
+      startRow = linha,
+      startCol = 1,
+      colNames = FALSE
+    )
+
+    openxlsx::writeData(
+      wb,
+      sheet = "Ótimo",
+      x = ifelse(
+        !is.null(ot$mensagem),
+        ot$mensagem,
+        ""
+      ),
+      startRow = linha,
+      startCol = 2,
+      colNames = FALSE
+    )
+
+    # Formato numérico
+    estilo_num <- openxlsx::createStyle(
+      numFmt = "0.000000"
+    )
+
+    # Aplica formato numérico às células da coluna Valor
+    # que efetivamente contêm números
+    linhas_numericas <- c(
+      3:(2 + length(ot$ponto)),
+      3 + length(ot$ponto),
+      5 + length(ot$ponto)
+    )
+
+    openxlsx::addStyle(
+      wb,
+      sheet = "Ótimo",
+      style = estilo_num,
+      rows = linhas_numericas,
+      cols = 2,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+
+    # Ajuste das larguras das colunas
+    openxlsx::setColWidths(
+      wb,
+      sheet = "Ótimo",
+      cols = 1,
+      widths = 20
+    )
+
+    openxlsx::setColWidths(
+      wb,
+      sheet = "Ótimo",
+      cols = 2,
+      widths = 45
+    )
   }
 
   # =======================
@@ -378,7 +534,7 @@ exportar_excel_completo_dcc <- function(fit,
       ),
       Valor = c(
         pe$classificacao,
-        pe$resposta_estimada,
+        "",
         ifelse(pe$convergencia == 0, "Sucesso", "Falha")
       ),
       check.names = FALSE
@@ -414,6 +570,17 @@ exportar_excel_completo_dcc <- function(fit,
     openxlsx::addWorksheet(wb, "Ponto Estacionário")
 
     openxlsx::writeData(wb, "Ponto Estacionário", resumo_df, startRow = 2)
+
+    # Escreve a resposta estimada como valor numérico
+    openxlsx::writeData(
+      wb,
+      "Ponto Estacionário",
+      as.numeric(pe$resposta_estimada),
+      startRow = 4,
+      startCol = 2,
+      colNames = FALSE
+    )
+
     openxlsx::addStyle(
       wb, "Ponto Estacionário", estilo_cabecalho,
       rows = 2, cols = 1:ncol(resumo_df), gridExpand = TRUE, stack = TRUE

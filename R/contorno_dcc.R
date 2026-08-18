@@ -135,6 +135,9 @@ contorno_dcc <- function(fit,
   on.exit(graphics::par(oldpar))
 
   graphics::par(mar = c(5.2, 5.2, 4.2, 8.5))
+  ticks_x <- pretty(xs, n = 5)
+  ticks_y <- pretty(ys, n = 5)
+  ticks_z <- pretty(c(zmin, zmax), n = 5)
 
   graphics::filled.contour(
     x = xs,
@@ -146,10 +149,41 @@ contorno_dcc <- function(fit,
     ylab = x2,
     main = paste("Gráfico de Contorno -", nome_resp),
     key.title = graphics::title(main = nome_resp, cex.main = 0.82),
-    key.axes = graphics::axis(4, cex.axis = 0.9),
+    key.axes = graphics::axis(
+      4,
+      at = ticks_z,
+      labels = format(
+        ticks_z,
+        trim = TRUE,
+        decimal.mark = ","
+      ),
+      cex.axis = 0.9
+    ),
     plot.axes = {
-      graphics::axis(1, cex.axis = 0.9)
-      graphics::axis(2, cex.axis = 0.9)
+      eixo_x <- graphics::axTicks(1)
+      eixo_y <- graphics::axTicks(2)
+
+      graphics::axis(
+        1,
+        at = ticks_x,
+        labels = format(
+          ticks_x,
+          trim = TRUE,
+          decimal.mark = ","
+        ),
+        cex.axis = 0.9
+      )
+
+      graphics::axis(
+        2,
+        at = ticks_y,
+        labels = format(
+          ticks_y,
+          trim = TRUE,
+          decimal.mark = ","
+        ),
+        cex.axis = 0.9
+      )
 
       graphics::contour(
         x = xs,

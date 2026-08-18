@@ -4,7 +4,11 @@
 \alias{read_clipboard_dcc}
 \title{Ler dados copiados da planilha para DCC}
 \usage{
-read_clipboard_dcc()
+read_clipboard_dcc(dec = ",")
+}
+\arguments{
+\item{dec}{caractere utilizado como separador decimal.
+O padrão é ",".}
 }
 \value{
 Um data.frame com os dados lidos do clipboard.
